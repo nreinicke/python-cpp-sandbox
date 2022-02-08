@@ -1,7 +1,10 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+from pathlib import Path
 
-df = pd.read_csv("../build/dev/results.csv")
+resdir = Path("../build/dev/") if Path("../build/dev/").exists() else Path("../build/")
+
+df = pd.read_csv(resdir / "results.csv")
 
 fig, ax = plt.subplots(2, 1, sharex=True, figsize=(10, 10))
 ax[0].plot(df.time, df.fuel_pwr_w * 1e-3, label='fuel')
