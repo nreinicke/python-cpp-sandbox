@@ -1,21 +1,106 @@
 #pragma once
 
-#include <string>
+#include <algorithm>
+#include <chrono>
+#include <cmath>
+#include <fstream>
+#include <iostream>
+#include <numeric>
+#include <vector>
 
-/**
- * @brief The core implementation of the executable
- *
- * This class makes up the library part of the executable, which means that the
- * main logic is implemented here. This kind of separation makes it easy to
- * test the implementation for the executable, because the logic is nicely
- * separated from the command-line logic implemented in the main function.
- */
-struct library
+using std::cout;
+using std::string;
+using std::vector;
+
+const double RHO_AIR = 1.171774;
+const double G = 9.81;
+
+auto get_rho_air(double temp_c = 22.0, double elevation_m = 180.0) -> double;
+
+auto trapz_integration(vector<double> x, vector<double> y) -> vector<double>;
+
+auto interpolate(const vector<double>& xData,
+                 const vector<double>& yData,
+                 double x,
+                 bool extrapolate=false) -> double;
+
+struct TimeTrace
 {
-  /**
-   * @brief Simply initializes the name member to the name of the project
-   */
-  library();
-
-  std::string name;
+  vector<double> time;
+  vector<double> speed;
+  vector<double> dt_s;
+  auto distance() const -> vector<double>
+  {
+    return trapz_integration(time, speed);
+  };
+  TimeTrace(vector<double>& time, vector<double>& speed)
+      : time(time)
+      , speed(speed)
+  {
+    dt_s = vector<double>(time.size() - 1, 0.0);
+    std::transform(time.begin(),
+                   time.end() - 1,
+                   time.begin() + 1,
+                   dt_s.begin(),
+                   [](double t1, double t2) { return t2 - t1; });
+  }
 };
+
+struct BasicTrain
+{
+  double roll_resist;
+  double drag_coeff;
+  double frnt_area_m2;
+  double m_kg;
+};
+
+struct LocoConsist
+{
+  double fc_pw_peak_w;
+  vector<double> fc_eta_array;
+  vector<double> fc_pwr_array;
+};
+
+struct SimulationState
+{
+  TimeTrace trace;
+  const BasicTrain train;
+  const LocoConsist loco_con;
+
+  vector<double> rr_pwr_w;
+  vector<double> drag_pw_w;
+  vector<double> accel_pwr_w;
+  vector<double> brake_pwr_w;
+  vector<double> rho_air_kg__m3;
+  vector<double> req_pwr_w;
+  vector<double> fuel_pwr_w;
+  vector<double> trace_miss_iters;
+  vector<bool> trace_met;
+
+  // constructor
+  SimulationState(TimeTrace& trace,
+                  const BasicTrain& train,
+                  const LocoConsist& loco_con)
+      : trace(trace)
+      , train(train)
+      , loco_con(loco_con)
+  {
+    size_t n = trace.time.size();
+    rr_pwr_w = vector<double>(n, 0.0);
+    drag_pw_w = vector<double>(n, 0.0);
+    accel_pwr_w = vector<double>(n, 0.0);
+    brake_pwr_w = vector<double>(n, 0.0);
+    rho_air_kg__m3 = vector<double>(n, 0.0);
+    req_pwr_w = vector<double>(n, 0.0);
+    fuel_pwr_w = vector<double>(n, 0.0);
+    trace_miss_iters = vector<double>(n, 0.0);
+    trace_met = vector<bool>(n, false);
+  }
+};
+
+void solve_required_power(SimulationState& state, int t);
+void solve_missed_trace(SimulationState& state, int t);
+void solve_braking(SimulationState& state, int t);
+void solve_energy_consumption(SimulationState& state, int t);
+void step(SimulationState& state, int t);
+
