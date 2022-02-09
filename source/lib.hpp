@@ -12,7 +12,7 @@ using std::cout;
 using std::string;
 using std::vector;
 
-const double RHO_AIR = 1.171774;
+const double R_AIR = 287;
 const double G = 9.81;
 
 auto get_rho_air(double temp_c = 22.0, double elevation_m = 180.0) -> double;
@@ -27,15 +27,15 @@ auto interpolate(const vector<double>& xData,
 struct TimeTrace
 {
   vector<double> time;
-  vector<double> speed;
+  vector<double> speed_m__s;
   vector<double> dt_s;
   auto distance() const -> vector<double>
   {
-    return trapz_integration(time, speed);
+    return trapz_integration(time, speed_m__s);
   };
-  TimeTrace(vector<double>& time, vector<double>& speed)
+  TimeTrace(vector<double>& time, vector<double>& speed_m__s)
       : time(time)
-      , speed(speed)
+      , speed_m__s(speed_m__s)
   {
     dt_s = vector<double>(time.size() - 1, 0.0);
     std::transform(time.begin(),

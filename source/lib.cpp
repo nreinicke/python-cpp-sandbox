@@ -12,10 +12,16 @@ using std::cout;
 using std::string;
 using std::vector;
 
+
+
 auto get_rho_air(double temp_c, double elevation_m) -> double
 {
   // actually implement this
-  return RHO_AIR;
+  auto T_standard = 15.04 - 0.00649 * elevation_m;  // nasa [degC]
+  auto p = 101.29e3 * std::pow(((T_standard + 273.1) / 288.08), 5.256); // nasa [Pa]
+  auto rho = p / (R_AIR * (temp_c + 273.15));  // [kg/m**3]
+
+  return rho;
 }
 
 auto trapz_integration(vector<double> x, vector<double> y) -> vector<double>
@@ -66,13 +72,13 @@ void solve_required_power(SimulationState& state, int t)
 
   state.rho_air_kg__m3[t] = rho_air;
   state.rr_pwr_w[t] = train.roll_resist * std::cos(std::atan(grade))
-      * train.m_kg * G * 0.5 * (trace.speed[t - 1] + trace.speed[t]);
+      * train.m_kg * G * 0.5 * (trace.speed_m__s[t - 1] + trace.speed_m__s[t]);
 
   state.drag_pw_w[t] = 0.5 * rho_air * train.drag_coeff * train.frnt_area_m2
-      * std::pow(0.5 * (trace.speed[t - 1] + trace.speed[t]), 3);
+      * std::pow(0.5 * (trace.speed_m__s[t - 1] + trace.speed_m__s[t]), 3);
 
   state.accel_pwr_w[t] = train.m_kg / (2 * trace.dt_s[t])
-      * (std::pow(trace.speed[t], 2) - std::pow(trace.speed[t - 1], 2));
+      * (std::pow(trace.speed_m__s[t], 2) - std::pow(trace.speed_m__s[t - 1], 2));
 
   // TODO: add grade and curvature power
 
@@ -84,8 +90,8 @@ void solve_missed_trace(SimulationState& state, int t)
 {
   state.trace_met[t] = state.req_pwr_w[t] <= state.loco_con.fc_pw_peak_w;
   vector<double> speed_guess = {
-      state.trace.speed[t],
-      state.trace.speed[t]
+      state.trace.speed_m__s[t],
+      state.trace.speed_m__s[t]
           * std::pow(state.loco_con.fc_pw_peak_w / state.req_pwr_w[t], 3)};
   vector<double> pwr_shortage = {state.req_pwr_w[t]
                                  - state.loco_con.fc_pw_peak_w};
@@ -95,7 +101,7 @@ void solve_missed_trace(SimulationState& state, int t)
       break;
     }
     state.trace_miss_iters[t] += 1.0;
-    state.trace.speed[t] = speed_guess[speed_guess.size() - 1];
+    state.trace.speed_m__s[t] = speed_guess[speed_guess.size() - 1];
     solve_required_power(state, t);
     pwr_shortage.push_back(state.req_pwr_w[t] - state.loco_con.fc_pw_peak_w);
     double new_speed_guess = speed_guess[speed_guess.size() - 1]
@@ -103,7 +109,7 @@ void solve_missed_trace(SimulationState& state, int t)
            - speed_guess[speed_guess.size() - 2])
             / (pwr_shortage[pwr_shortage.size() - 1]
                - pwr_shortage[pwr_shortage.size() - 2]);
-    state.trace.speed[t] = new_speed_guess;
+    state.trace.speed_m__s[t] = new_speed_guess;
     speed_guess.push_back(new_speed_guess);
     state.trace_met[t] = state.req_pwr_w[t] <= state.loco_con.fc_pw_peak_w;
   }
