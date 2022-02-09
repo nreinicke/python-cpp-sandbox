@@ -24,23 +24,25 @@ auto interpolate(const vector<double>& xData,
                  double x,
                  bool extrapolate=false) -> double;
 
+// string DEFAULT_TIME_TRACE_DIR = "../resources/";
+
 struct TimeTrace
 {
-  vector<double> time;
+  vector<double> time_s;
   vector<double> speed_m__s;
   vector<double> dt_s;
-  auto distance() const -> vector<double>
+  auto dist_m() const -> vector<double>
   {
-    return trapz_integration(time, speed_m__s);
+    return trapz_integration(time_s, speed_m__s);
   };
-  TimeTrace(vector<double>& time, vector<double>& speed_m__s)
-      : time(time)
+  TimeTrace(vector<double>& time_s, vector<double>& speed_m__s)
+      : time_s(time_s)
       , speed_m__s(speed_m__s)
   {
-    dt_s = vector<double>(time.size() - 1, 0.0);
-    std::transform(time.begin(),
-                   time.end() - 1,
-                   time.begin() + 1,
+    dt_s = vector<double>(time_s.size() - 1, 0.0);
+    std::transform(time_s.begin(),
+                   time_s.end() - 1,
+                   time_s.begin() + 1,
                    dt_s.begin(),
                    [](double t1, double t2) { return t2 - t1; });
   }
@@ -85,7 +87,7 @@ struct SimulationState
       , train(train)
       , loco_con(loco_con)
   {
-    size_t n = trace.time.size();
+    size_t n = trace.time_s.size();
     rr_pwr_w = vector<double>(n, 0.0);
     drag_pw_w = vector<double>(n, 0.0);
     accel_pwr_w = vector<double>(n, 0.0);

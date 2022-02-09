@@ -15,7 +15,7 @@ using std::vector;
 auto main() -> int
 {
   vector<double> speed_m__s {};
-  vector<double> time(speed_m__s.size());
+  vector<double> time_s(speed_m__s.size());
 
   std::ifstream time_trace_infile;
   time_trace_infile.open("../resources/demo_time_trace.csv");
@@ -23,7 +23,7 @@ auto main() -> int
 
   }
 
-  TimeTrace trace {time, speed_m__s};
+  TimeTrace trace {time_s, speed_m__s};
   BasicTrain train {0.005, 10, 5, 50000};
 
   double max_power = 500000;
@@ -56,7 +56,7 @@ auto main() -> int
   outfile << "time_s,speed_m__s,req_pwr_w,rr_pwr_w,drag_pwr_w,accel_pwr_w,brake_pwr_w,"
              "fuel_pwr_w,trace_met,trace_miss_iters"
           << '\n';
-  for (const int& t : time) {
+  for (const int& t : time_s) {
     outfile << t << ',' << state.trace.speed_m__s[t] << ',' << state.req_pwr_w[t]
             << ',' << state.rr_pwr_w[t] << ',' << state.drag_pw_w[t] << ','
             << state.accel_pwr_w[t] << ',' << state.brake_pwr_w[t] << ','
