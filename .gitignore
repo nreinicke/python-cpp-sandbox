@@ -11,3 +11,6 @@ cmake-build-*/
 prefix/
 CMakeLists.txt.user
 CMakeUserPresets.json
+
+_skbuild/
+*.egg-info
