@@ -15,13 +15,29 @@ using std::vector;
 auto main() -> int
 {
   vector<double> speed_m__s {};
-  vector<double> time_s(speed_m__s.size());
 
-  std::ifstream time_trace_infile;
-  time_trace_infile.open("../resources/demo_time_trace.csv");
-  for (){
+  // std::ifstream time_trace_infile;
+  // time_trace_infile.open("../resources/demo_time_trace.csv");
+  // for (){
 
+  // }
+
+  vector<double> ramp_up(100);
+  std::iota(ramp_up.begin(), ramp_up.end(), 0.0);
+  for (auto& s : ramp_up) {
+    s = s / 5;
   }
+  speed_m__s.insert(speed_m__s.end(), ramp_up.begin(), ramp_up.end());
+
+  vector<double> coast(3000, 20);
+  speed_m__s.insert(speed_m__s.end(), coast.begin(), coast.end());
+
+  vector<double> ramp_down = ramp_up;
+  std::reverse(ramp_down.begin(), ramp_down.end());
+  speed_m__s.insert(speed_m__s.end(), ramp_down.begin(), ramp_down.end());
+
+  vector<double> time_s(speed_m__s.size());
+  std::iota(time_s.begin(), time_s.end(), 0.0);
 
   TimeTrace trace {time_s, speed_m__s};
   BasicTrain train {0.005, 10, 5, 50000};

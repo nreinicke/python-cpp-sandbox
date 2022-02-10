@@ -12,11 +12,10 @@ using std::cout;
 using std::string;
 using std::vector;
 
-
+// general functions
 
 auto get_rho_air(double temp_c, double elevation_m) -> double
 {
-  // actually implement this
   auto T_standard = 15.04 - 0.00649 * elevation_m;  // nasa [degC]
   auto p = 101.29e3 * std::pow(((T_standard + 273.1) / 288.08), 5.256); // nasa [Pa]
   auto rho = p / (R_AIR * (temp_c + 273.15));  // [kg/m**3]
@@ -60,6 +59,19 @@ auto interpolate(const vector<double>& xData,
 
   return yL + dydx * (x - xL);
 }
+
+// Functions that manipulate TimeTrace
+
+// auto load_time_trace(string& csv_file, SimulationState& state)
+// {
+//   // file pointer
+//   fstream fin;
+//   // open file
+//   fin.open(csv_file, ios::in);
+
+// }
+
+// Functions that manipulate SimulationState
 
 void solve_required_power(SimulationState& state, int t)
 {
