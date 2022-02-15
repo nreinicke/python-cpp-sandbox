@@ -21,6 +21,7 @@ add_library(
     sandbox_lib OBJECT
     source/lib.cpp
 )
+set_property(TARGET sandbox_lib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(
     sandbox_lib ${warning_guard}
