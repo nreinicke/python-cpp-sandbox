@@ -18,9 +18,6 @@ using std::vector;
 
 auto main() -> int
 {
-
-
-
   vector<double> speed_m__s {};
 
   vector<double> ramp_up(100);
@@ -43,6 +40,7 @@ auto main() -> int
   TimeTrace trace {time_s, speed_m__s};
   BasicTrain train {0.005, 10, 5, 50000};
 
+  const auto start = std::chrono::high_resolution_clock::now();
   double max_power = 500000;
   vector<double> power_frac {0.1, 0.325, 0.55, 0.775, 1.0};
   vector<double> fc_pwr_vec_w(power_frac.size());
@@ -54,7 +52,6 @@ auto main() -> int
 
   SimulationState state {trace, train, loco_con};
 
-  const auto start = std::chrono::high_resolution_clock::now();
   for (int t = 1; t < speed_m__s.size(); ++t) {
     step(state, t);
   }
