@@ -15,6 +15,10 @@ docs_early_return()
 include(cmake/project-is-top-level.cmake)
 include(cmake/variables.cmake)
 
+# ----- Find pybind11 and python -----
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
+add_subdirectory(extern/pybind11)
+
 # ---- Declare library ----
 
 add_library(
@@ -45,6 +49,7 @@ set_target_properties(
 target_compile_features(sandbox_exe PRIVATE cxx_std_17)
 
 target_link_libraries(sandbox_exe PRIVATE sandbox_lib)
+target_link_libraries(sandbox_exe PRIVATE pybind11::embed)
 
 
 if(SKBUILD)

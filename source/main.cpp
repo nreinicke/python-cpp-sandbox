@@ -5,6 +5,9 @@
 #include <iostream>
 #include <numeric>
 #include <vector>
+#include <pybind11/embed.h>
+#include <pybind11/stl.h>
+namespace py = pybind11;
 
 #include "lib.hpp"
 
@@ -12,15 +15,13 @@ using std::cout;
 using std::string;
 using std::vector;
 
+
 auto main() -> int
 {
+
+
+
   vector<double> speed_m__s {};
-
-  // std::ifstream time_trace_infile;
-  // time_trace_infile.open("../resources/demo_time_trace.csv");
-  // for (){
-
-  // }
 
   vector<double> ramp_up(100);
   std::iota(ramp_up.begin(), ramp_up.end(), 0.0);
@@ -59,27 +60,42 @@ auto main() -> int
   }
   const auto end = std::chrono::high_resolution_clock::now();
 
-  cout << "Time taken: "
+  cout << "C++ Time taken: "
        << std::chrono::duration_cast<std::chrono::microseconds>(end - start)
               .count()
        << " microseconds" << '\n';
 
-  // write to file
-  std::ofstream outfile;
-  outfile.open("results.csv");
+  // // write to file
+  // std::ofstream outfile;
+  // outfile.open("results.csv");
 
-  // write header
-  outfile << "time_s,speed_m__s,req_pwr_w,rr_pwr_w,drag_pwr_w,accel_pwr_w,brake_pwr_w,"
-             "fuel_pwr_w,trace_met,trace_miss_iters"
-          << '\n';
-  for (const int& t : time_s) {
-    outfile << t << ',' << state.trace.speed_m__s[t] << ',' << state.req_pwr_w[t]
-            << ',' << state.rr_pwr_w[t] << ',' << state.drag_pw_w[t] << ','
-            << state.accel_pwr_w[t] << ',' << state.brake_pwr_w[t] << ','
-            << state.fuel_pwr_w[t] << ',' << state.trace_met[t] << ','
-            << state.trace_miss_iters[t] << '\n';
-  }
-  outfile.close();
+  // // write header
+  // outfile << "time_s,speed_m__s,req_pwr_w,rr_pwr_w,drag_pwr_w,accel_pwr_w,brake_pwr_w,"
+  //            "fuel_pwr_w,trace_met,trace_miss_iters"
+  //         << '\n';
+  // for (const int& t : time_s) {
+  //   outfile << t << ',' << state.trace.speed_m__s[t] << ',' << state.req_pwr_w[t]
+  //           << ',' << state.rr_pwr_w[t] << ',' << state.drag_pw_w[t] << ','
+  //           << state.accel_pwr_w[t] << ',' << state.brake_pwr_w[t] << ','
+  //           << state.fuel_pwr_w[t] << ',' << state.trace_met[t] << ','
+  //           << state.trace_miss_iters[t] << '\n';
+  // }
+  // outfile.close();
+
+  py::scoped_interpreter guard{};
+
+  py::module_ sys = py::module_::import("sys");
+  py::print(sys.attr("path"));
+
+  py::module_ powertrain = py::module_::import("loco_powertrain.default_powertrain");
+
+  const auto pystart = std::chrono::high_resolution_clock::now();
+  py::object result = powertrain.attr("run")(speed_m__s, time_s);
+  const auto pyend = std::chrono::high_resolution_clock::now();
+  cout << "Python Time taken: "
+       << std::chrono::duration_cast<std::chrono::microseconds>(pyend - pystart)
+              .count()
+       << " microseconds" << '\n';
 
   return 0;
 }
