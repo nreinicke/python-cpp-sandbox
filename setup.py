@@ -22,7 +22,7 @@ setup(
     package_dir={"": "source"},
     cmake_install_dir="source/altrios_py",
     include_package_data=True,
-    install_requires=["pandas"],
+    install_requires=["numpy", "pandas"],
     extras_require={"test": ["pytest"]},
     python_requires=">=3.6",
 )
