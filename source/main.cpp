@@ -81,10 +81,7 @@ auto main() -> int
 
   py::scoped_interpreter guard{};
 
-  py::module_ sys = py::module_::import("sys");
-  py::print(sys.attr("path"));
-
-  py::module_ powertrain = py::module_::import("loco_powertrain.default_powertrain");
+  py::module_ powertrain = py::module_::import("default_powertrain");
 
   const auto pystart = std::chrono::high_resolution_clock::now();
   py::object result = powertrain.attr("run")(speed_m__s, time_s);
